@@ -1,19 +1,26 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace Topic_7_keyboard_and_mouse_events
 {
     public class Game1 : Game
     {
-        Texture2D pacTexture, pacLeft, pacDown, pacUp, pacRight;
+
+
+        Texture2D pacTexture, pacLeft, pacDown, pacUp, pacRight, pacSleep;
 
         Rectangle pacLocation;
 
-        KeyboardState keyboardState;
+        KeyboardState keyboardState, prevKeyboardState;
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+
+        Vector2 pacSpeed;
+
+        Random generator = new Random();
 
         public Game1()
         {
@@ -27,6 +34,7 @@ namespace Topic_7_keyboard_and_mouse_events
             // TODO: Add your initialization logic here
 
             pacLocation = new Rectangle(10, 10, 100, 100);
+            pacSpeed = Vector2.Zero;
 
             base.Initialize();
         }
@@ -35,6 +43,7 @@ namespace Topic_7_keyboard_and_mouse_events
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             pacTexture = Content.Load<Texture2D>("pacSleep");
+            pacSleep = Content.Load<Texture2D>("pacSleep");
             pacLeft = Content.Load<Texture2D>("pacLeft");
             pacDown = Content.Load<Texture2D>("pacDown");
             pacUp = Content.Load<Texture2D>("pacUp");
@@ -48,25 +57,69 @@ namespace Topic_7_keyboard_and_mouse_events
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            prevKeyboardState = keyboardState;
             keyboardState = Keyboard.GetState();
 
-            if (keyboardState.IsKeyDown(Keys.Up))
+            pacSpeed = Vector2.Zero;
+
+            if (keyboardState.IsKeyDown(Keys.Up) || keyboardState.IsKeyDown(Keys.W))
             {
-                pacLocation.Y -= 2;
+                pacSpeed.Y -= 2;
+                pacTexture = pacUp;
             }
-            if (keyboardState.IsKeyDown(Keys.Down))
+            if (keyboardState.IsKeyDown(Keys.Down) || keyboardState.IsKeyDown(Keys.S))
             {
-                pacLocation.Y += 2;
+                pacSpeed.Y += 2;
+                pacTexture = pacDown;
             }
-            if (keyboardState.IsKeyDown(Keys.Left))
+            if (keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A))
             {
-                pacLocation.X -= 2;
+                pacSpeed.X -= 2;
+                pacTexture = pacLeft;
             }
-            if (keyboardState.IsKeyDown(Keys.Right))
+            if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D))
             {
-                pacLocation.X += 2;
+                pacSpeed.X += 2;
+                pacTexture = pacRight;
+            }
+            if (keyboardState.IsKeyDown(Keys.Space) && prevKeyboardState.IsKeyUp(Keys.Space))
+            {
+                int width = generator.Next(0, 800);
+                int height = generator.Next(0, 500);
+                pacLocation = new Rectangle(width, height, 100, 100);
+
             }
 
+            if (pacSpeed == Vector2.Zero)
+                pacTexture = pacSleep;
+
+            pacLocation.Offset(pacSpeed);
+
+
+            if (pacLocation.Right > _graphics.PreferredBackBufferWidth || pacLocation.Left < 0)
+            {
+                if (pacLocation.Right > _graphics.PreferredBackBufferWidth)
+                {
+                    pacLocation.X = _graphics.PreferredBackBufferWidth - pacLocation.Width;
+                }
+                else
+                {
+                    pacLocation.X = 0;
+                }
+
+            }
+            if (pacLocation.Bottom> _graphics.PreferredBackBufferHeight || pacLocation.Top < 0)
+            {
+                if (pacLocation.Bottom > _graphics.PreferredBackBufferHeight)
+                {
+                    pacLocation.Y = _graphics.PreferredBackBufferHeight - pacLocation.Height;
+                }
+                else
+                {
+                    pacLocation.Y = 0;
+                }
+
+            }
 
             // TODO: Add your update logic here
 
@@ -82,22 +135,26 @@ namespace Topic_7_keyboard_and_mouse_events
 
             if (keyboardState.IsKeyDown(Keys.Up))
             {
-                pacTexture = pacUp;
+                
             }
-            if (keyboardState.IsKeyDown (Keys.Down))
+            else if (keyboardState.IsKeyDown (Keys.Down))
             {
-                pacTexture = pacDown;
+                
             }
-            if (keyboardState.IsKeyDown(Keys.Left))
+            else if (keyboardState.IsKeyDown(Keys.Left))
             {
-                pacTexture = pacLeft;
             }
-            if (keyboardState.IsKeyDown(Keys.Right))
+            else if (keyboardState.IsKeyDown(Keys.Right))
             {
-                pacTexture = pacRight;
             }
+            else 
+            {
+                pacTexture = pacSleep;
+            }
+            
 
-                _spriteBatch.End();
+
+            _spriteBatch.End();
 
             // TODO: Add your drawing code here
 
